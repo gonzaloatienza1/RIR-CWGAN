@@ -1,4 +1,4 @@
-# **Conditional Wasserstein GAN for Generating Realistic Room Impulse Responses in the Time Domain**
+# **RIR-CWGAN: Conditional Wasserstein Generative Adversarial Network for Synthesizing Realistic Room Impulse Responses**
 
 This repository provides the implementation of a **CWGAN-based** approach for Room Impulse Responses (RIRs) generation using embeddings that encapsulate room properties. The method is designed to model acoustic responses across various room conditions, employing neural networks to generate RIRs that closely match measured or simulated responses. Predicting RIRs is crucial for audio scene modeling, speech enhancement, and room acoustics simulation.
 
