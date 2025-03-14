@@ -76,19 +76,15 @@ def prepare_and_convert_room_configs(room_info):
     features = []
     for room in room_info:
         # Convert dimensions from centimeters to meters
-        lx, ly, lz = room[8] / 100, room[9] / 100, room[10] / 100  # Listener coordinates
-        sx, sy, sz = room[5] / 100, room[6] / 100, room[7] / 100  # Speaker coordinates
-        rx, ry, rz = room[0] / 100, room[1] / 100, room[4] / 100  # Room dimensions
-
-        # Calculate the distance between listener and speaker
-        distance = np.sqrt((sx - lx)**2 + (sy - ly)**2 + (sz - lz)**2)
+        lx, ly, lz = round(room[8] / 100, 2), round(room[9] / 100, 2), round(room[10] / 100, 2)  # Listener coordinates
+        sx, sy, sz = round(room[5] / 100, 2), round(room[6] / 100, 2), round(room[7] / 100, 2)  # Speaker coordinates
+        rx, ry, rz = round(room[0] / 100, 2), round(room[1] / 100, 2), round(room[4] / 100, 2)  # Room dimensions
 
         # Extract and adjust T60 values based on predefined conditions
         t60 = round(room[11] / 100, 2)
-        t60 += 0.1 if 0.5 < t60 < 0.6 else 0.2 if t60 > 0.6 else 0.0
 
         # Create a feature row and add it to the features list
-        features.append([lx, ly, lz, sx, sy, sz, rx, ry, rz, t60, round(distance, 2)])
+        features.append([lx, ly, lz, sx, sy, sz, rx, ry, rz, t60])
 
     return np.array(features)  # Convert to NumPy array for further processing
 
