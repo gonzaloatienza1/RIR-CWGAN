@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import os
 from torch.utils.data import DataLoader
-from models.cwgan_model import Generator
+from model.cwgan_model import Generator
 from ..misc.load_data import load_data
 from ..misc.align_rirs import align_rirs
 from metrics.nmse_db_loss import NMSEdBLoss

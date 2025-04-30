@@ -7,9 +7,9 @@ import numpy as np
 import os
 import argparse
 import matplotlib.pyplot as plt
-from models.cwgan_model import Generator
+from model.cwgan_model import Generator
 from ..misc.load_data import load_data
-from ..trainers.cwgan_train import model_test
+from ..train.cwgan_train import model_test
 
 # Dimensiones de los arrays
 def plot_rir(generated_rir: np.ndarray, real_rir: np.ndarray, embedding: np.ndarray, output_path: str = None) -> None:

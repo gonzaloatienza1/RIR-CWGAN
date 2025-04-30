@@ -9,7 +9,7 @@ import pandas as pd
 import os
 from torch.utils.data import DataLoader
 from typing import List, Tuple
-from models.cwgan_model import Generator
+from model.cwgan_model import Generator
 from metrics.nmse_db_loss import NMSEdBLoss
 from metrics.npm import  NPM
 from metrics.d50 import  D50

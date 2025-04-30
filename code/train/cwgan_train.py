@@ -5,7 +5,7 @@ for generating Room Impulse Responses (RIRs) with modular training steps.
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from models.cwgan_model import Generator, Critic
+from model.cwgan_model import Generator, Critic
 from dataloader.rir_dataset import RIRDataset
 from ..misc.load_data import load_data
 from ..misc.align_rirs import align_rirs
