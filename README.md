@@ -5,25 +5,18 @@ This repository provides the implementation of a **CWGAN-based** approach for Ro
 Key features of this repository include:
 
 - **Custom RIR datasets:** Handling real and simulated RIRs using embeddings.
-
 - **Generator and Critic networks:** Trained using a Wasserstein GAN approach.
-
 - **Evaluation metrics:** Quantifying prediction accuracy using:
-
     - Normalized Mean Squared Error (NMSE)
-
     - Normalized Projection Misalignment (NPM)
-
-    - Direct-to-Reverberant Ratio Difference (DRR)
-
-    - Early-to-Total Sound Energy Ratio Difference (D50)
+    - Direct-to-Reverberant Ratio Difference (ΔDRR)
+    - Early-to-Total Sound Energy Ratio Difference (ΔD50)
 
 ## **Requirements**
 
 **Python Version:** 3.10.12
 
 **Dependencies:**
-
 ```
 librosa==0.9.2
 matplotlib==3.8.0
@@ -38,97 +31,67 @@ tqdm==4.66.1
 ## **Usage**
 
 ### **Embedding Processing** (`embedding.py`)
-
-The `embedding.py` script processes and normalizes room configuration embeddings derived from audio file metadata. These embeddings encapsulate room properties such as dimensions, listener and speaker positions, reverberation times (T60), and distances. The processed embeddings are saved in a pickle file for subsequent use in RIR generation models.
+The script processes and normalizes room configuration embeddings derived from audio file metadata. These embeddings encapsulate room properties such as dimensions, listener and speaker positions and reverberation times (T60). The processed embeddings are saved in a pickle file for subsequent use in RIR generation models.
 
 Use this script before training to preprocess room data and generate embeddings required by the model.
-
 ```
-python src/embedding.py --data_folder path/to/audio_data --cache_file path/to/cache.pkl --output_embedding_file path/to/normalized_embeddings.pkl
+python src/misc/embedding.py --data_folder path/to/audio_data --cache_file path/to/cache.pkl --output_embedding_file path/to/normalized_embeddings.pkl
 ```
-
 **Parameters:**
-
 - `--data_folder`: Directory containing the audio data.
-
 - `--cache_file`: Path to store/load the cache of audio data.
-
 - `--output_embedding_file`: Path to save the normalized embeddings.
 
-### **CWGAN Training** (`trainCWGAN.py`)
-
-The `trainCWGAN.py` script is responsible for training a Conditional Wasserstein GAN (CWGAN) to generate RIRs. The training alternates between optimizing the generator and the critic networks using the Wasserstein loss. During the training process, the generator tries to produce RIRs that are indistinguishable from real ones, while the critic learns to differentiate between real and generated RIRs.
-
-Use this script to train the model on room impulse response data after preparing the necessary embeddings and datasets.
-
+### **CWGAN Training** (`cwgan_train.py`)
+Trains a Conditional Wasserstein GAN (CWGAN) to generate RIRs. The training process alternates between optimizing the generator and critic using the Wasserstein loss, saving models every 5 epochs.
 ```
-python src/trainCWGAN.py --cache_rir path/to/cached_rir.pkl --cache_emb path/to/cached_embeddings.pkl --num_epochs 500 --batch_size 256 --z_dim 50 --gen_lr 5e-5 --crit_lr 5e-5
+python src/train/cwgan_train.py --cache_rir path/to/cached_rir.pkl --cache_emb path/to/cached_embeddings.pkl --num_epochs 500 --batch_size 256 --z_dim 50 --gen_lr 5e-5 --crit_lr 5e-5
 ```
-
 **Parameters:**
-
-- `--cache_rir`: Path to the cached RIR data.
-
-- `--cache_emb`: Path to the cached embeddings.
-
-- `--num_epochs`: Number of epochs for training (default: 500).
-
-- `--batch_size`: Batch size for training (default: 256).
-
-- `--z_dim`: Dimensionality of the noise vector (default: 50).
-
-- `--gen_lr`: Learning rate for the generator (default: 5e-5).
-
-- `--crit_lr`: Learning rate for the critic (default: 5e-5).
+- `--cache_rir`: Path to cached RIR data.
+- `--cache_emb`: Path to cached embeddings.
+- `--num_epochs`: Number of training epochs (default: 500).
+- `--batch_size`: Batch size (default: 256).
+- `--z_dim`: Latent noise dimension (default: 50).
+- `--gen_lr`: Generator learning rate (default: 5e-5).
+- `--crit_lr`: Critic learning rate (default: 5e-5).
 
 ### **Model Evaluation** (`search_model.py`)
-
-The `search_model.py` script evaluates different RIR models saved during the training process and selects the best one based on the Normalized Mean Square Error (NMSE) metric. During training, models are saved every 5 epochs, and this script iteratively loads each saved model, calculates NMSE, and saves the results to an Excel file.
-
-This script is used post-training to evaluate and compare the performance of saved models and select the best-performing model based on the NMSE metric.
-
+Evaluates CWGAN models saved during training. Iterates through saved models (every 5 epochs), calculates NMSE, and saves a summary to Excel.
 ```
-python src/search_model.py --output_path path/to/output --cache_rir path/to/cached_rir.pkl --cache_emb path/to/cached_embeddings.pkl --num_epochs 500
+python src/test/search_model.py --output_path path/to/output --cache_rir path/to/cached_rir.pkl --cache_emb path/to/cached_embeddings.pkl --num_epochs 500
 ```
-
 **Parameters:**
+- `--output_path`: Directory to save the Excel summary.
+- `--cache_rir`: Path to cached RIR data.
+- `--cache_emb`: Path to cached embeddings.
+- `--num_epochs`: Number of saved epochs (default: 500).
 
-- `--output_path`: Directory where the NMSE summary will be saved.
-
-- `--cache_rir`: Path to the cached RIR data.
-
-- `--cache_emb`: Path to the cached embeddings.
-
-- `--num_epochs`: Number of epochs for which models were saved (default: 500).
-
-### **CWGAN Evaluation** (`testCWGAN.py`)
-
-The `testCWGAN.py` script evaluates a trained CWGAN generator. It performs two main functions:
-
-1. Compute and save error metrics comparing generated and real RIRs to an Excel file.
-
-2. Plot and save 100 randomly selected RIR comparisons to visualize the generator's performance.
-
-Use this script to assess the performance of a trained CWGAN model by comparing the generated RIRs with the real ones and evaluating various error metrics.
-
+### **CWGAN Metric Evaluation** (`cwgan_test.py`)
+Evaluates a single trained CWGAN model. It calculates error metrics (MSE, NMSE, NPM, ΔDRR, ΔD50) and saves them to Excel.
 ```
-python src/testCWGAN.py --model_path path/to/generator.pth --output_path path/to/output --cache_rir path/to/cached_rir.pkl --cache_emb path/to/cached_embeddings.pkl --generate_excel --plot_rirs
+python src/test/cwgan_test.py --model_path path/to/generator.pth --output_path path/to/output --cache_rir path/to/cached_rir.pkl --cache_emb path/to/cached_embeddings.pkl --z_dim 50 --batch_size 1
 ```
-
 **Parameters:**
+- `--model_path`: Path to the trained generator model.
+- `--output_path`: Output directory to save Excel file.
+- `--cache_rir`: Path to cached RIR data.
+- `--cache_emb`: Path to cached embeddings.
+- `--z_dim`: Noise vector dimension (default: 50).
+- `--batch_size`: Batch size (default: 1).
 
-- `--model_path`: Path to the trained generator model file.
-
-- `--output_path`: Directory where outputs (plots and/or Excel files) will be saved.
-
-- `--cache_rir`: Path to the cached RIR pickle file.
-
-- `--cache_emb:` Path to the cached embeddings pickle file.
-
-- `--generate_excel:` If provided, calculates and saves error metrics to an Excel file.
-
-- `--plot_rirs`: If provided, plots and saves 100 randomly selected RIR comparisons.
+### **CWGAN RIR Visualization** (`cwgan_viz.py`)
+Generates and plots RIRs from a trained model. Compares generated vs real RIRs visually and annotates with the embedding.
+```
+python src/viz/cwgan_viz.py --model_path path/to/generator.pth --output_path path/to/output --cache_rir path/to/cached_rir.pkl --cache_emb path/to/cached_embeddings.pkl --z_dim 50 --n_plots 100
+```
+**Parameters:**
+- `--model_path`: Path to the trained generator model.
+- `--output_path`: Directory to save the plots.
+- `--cache_rir`: Path to cached RIR data.
+- `--cache_emb`: Path to cached embeddings.
+- `--z_dim`: Noise vector dimension (default: 50).
+- `--n_plots`: Number of RIR plots to generate (default: 100).
 
 ## **Citation**
-
 This work is currently under submission. Once published, the citation details will be updated here.
